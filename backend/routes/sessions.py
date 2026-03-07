@@ -124,3 +124,34 @@ def detect_session(session_id: str, db: Session = Depends(get_db)):
         "detection_count": result["detection_count"],
         "frames_processed": result["frames_processed"],
     }
+
+
+@router.post("/sessions/{session_id}/track", response_model=SessionResponse)
+def track_session(session_id: str, db: Session = Depends(get_db)):
+    session = db.query(AnalysisSession).filter(AnalysisSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+
+    if session.status != "detection_complete":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Session status is '{session.status}', expected 'detection_complete'",
+        )
+
+    try:
+        from services.tracking_service import run_tracking_pipeline
+
+        result = run_tracking_pipeline(session_id, db)
+        db.refresh(session)
+
+    except Exception as e:
+        session.status = "failed"
+        db.commit()
+        raise HTTPException(status_code=500, detail=f"Tracking failed: {str(e)}")
+
+    response = SessionResponse.model_validate(session)
+    return {
+        **response.model_dump(),
+        "track_count": result["track_count"],
+        "detections_tracked": result["detections_tracked"],
+    }

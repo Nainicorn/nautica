@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     YOLO_MODEL: str = "yolov8n.pt"
     YOLO_CONFIDENCE_THRESHOLD: float = 0.25
     YOLO_MAX_DETECTIONS: int = 50
+    IOU_THRESHOLD: float = 0.2
+    MAX_FRAMES_LOST: int = 5
+    TRACKING_MIN_CONFIDENCE: float = 0.3
+    PLAYBACK_TARGET_FPS: int = 10
 
     class Config:
         env_file = ".env"

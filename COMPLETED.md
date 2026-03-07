@@ -240,3 +240,74 @@ uploads/{session_id}/
 - `track_id` shows blank (null until Phase 7)
 - `position` shows pixel coords instead of GPS
 - `status` shows "UNTRACKED" instead of "TRACKING"
+
+## Stage 7: Object Tracking Across Frames
+
+- IoU-based multi-object tracker with Hungarian assignment (scipy)
+- Type-aware matching — boats only match boats, persons only match persons
+- Confidence gating — detections below TRACKING_MIN_CONFIDENCE (0.3) ignored
+- Track lifecycle: active → lost → ended (based on MAX_FRAMES_LOST threshold)
+- Persistent track IDs: VES-001, VES-002, etc.
+- Tracking artifact saved to `uploads/{session_id}/tracking/tracks.json`
+
+### Algorithm:
+1. Iterate frames in sorted order
+2. Filter low-confidence detections
+3. Group detections and active tracks by object_type
+4. Build IoU cost matrix per type, run Hungarian assignment
+5. Matched pairs (IoU >= 0.2): update track bbox, reset lost counter
+6. Unmatched detections: spawn new tracks
+7. Unmatched tracks: increment lost counter, end if > MAX_FRAMES_LOST (5)
+
+### Backend changes:
+| File | Changes |
+|------|--------|
+| `requirements.txt` | Added `scipy` |
+| `config.py` | Added `IOU_THRESHOLD=0.2`, `MAX_FRAMES_LOST=5`, `TRACKING_MIN_CONFIDENCE=0.3` |
+| `services/tracking_service.py` | Full implementation replacing stub. `TrackingService` class with IoU computation, cost matrix building, Hungarian assignment, track spawning/aging. `run_tracking_pipeline()` orchestrates: loads DB detections, runs tracker, bulk-updates track_id, saves artifact, sets status to `tracking_complete`. |
+| `routes/sessions.py` | Added `POST /api/sessions/{session_id}/track` — validates status is `detection_complete`, runs tracking pipeline, returns session + track_count/detections_tracked |
+| `routes/detections.py` | Changed detection status label from `"TRACKING"` to `"TRACKED"` when track_id is present |
+
+### Frontend changes:
+| File | Changes |
+|------|--------|
+| `services/sessions.js` | Added `detectSession(sessionId)` and `trackSession(sessionId)` |
+| `components/detections/detections.js` | Updated `statusClass()` to handle `"tracked"` for badge styling |
+
+### Tracking artifact schema (`tracks.json`):
+```json
+{
+  "session_id": "...",
+  "tracks": [{
+    "track_id": "VES-001",
+    "object_type": "Boat",
+    "state": "active|lost|ended",
+    "first_frame": 1,
+    "last_frame": 150,
+    "detection_count": 45,
+    "detections": [{ "frame_number", "detection_id", "bbox", "confidence" }]
+  }],
+  "summary": {
+    "total_tracks", "active_tracks", "lost_tracks", "ended_tracks",
+    "total_detections_tracked", "total_detections_skipped", "frames_processed"
+  }
+}
+```
+
+### Status transitions (updated):
+`detection_complete` → `tracking` → `tracking_complete` (success) / `failed` (error)
+
+### Directory structure (updated):
+```
+uploads/{session_id}/
+  source/      ← original uploaded file
+  frames/      ← extracted frames
+  detections/  ← per-frame detection JSON
+  tracking/    ← tracks.json artifact (consumed by Phase 8 + 9)
+  annotated/   ← empty, prepared for Phase 8
+```
+
+### Tracking is triggered separately:
+- Not auto-chained in upload flow — called via `POST /api/sessions/{id}/track`
+- Frontend has `trackSession()` ready but not wired into upload pipeline yet
+- Allows phase-by-phase debugging and control

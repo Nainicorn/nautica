@@ -26,17 +26,7 @@
                         <th>STATUS</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {{#each detections}}
-                        <tr>
-                            <td class="__detections-id">{{this.track_id}}</td>
-                            <td>{{this.object_type}}</td>
-                            <td><span class="__detections-conf __detections-conf--{{this.confLevel}}">{{this.confDisplay}}</span></td>
-                            <td class="__detections-mono">{{this.position}}</td>
-                            <td><span class="__detections-status __detections-status--{{this.statusClass}}">{{this.statusLabel}}</span></td>
-                        </tr>
-                    {{/each}}
-                </tbody>
+                <tbody class="__detections-tbody"></tbody>
             </table>
         {{/if}}
     </div>

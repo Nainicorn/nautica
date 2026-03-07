@@ -1,6 +1,8 @@
+from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from database import engine, Base, SessionLocal
 from utils.mock_loader import load_mock
 
@@ -84,6 +86,7 @@ from routes.upload import router as upload_router
 from routes.detections import router as detections_router
 from routes.anomalies import router as anomalies_router
 from routes.reports import router as reports_router
+from routes.playback import router as playback_router
 
 app.include_router(health_router, prefix="/api", tags=["health"])
 app.include_router(sessions_router, prefix="/api", tags=["sessions"])
@@ -91,3 +94,10 @@ app.include_router(upload_router, prefix="/api", tags=["upload"])
 app.include_router(detections_router, prefix="/api", tags=["detections"])
 app.include_router(anomalies_router, prefix="/api", tags=["anomalies"])
 app.include_router(reports_router, prefix="/api", tags=["reports"])
+app.include_router(playback_router, prefix="/api", tags=["playback"])
+
+app.mount(
+    "/api/uploads",
+    StaticFiles(directory=Path(__file__).resolve().parent / "uploads"),
+    name="uploads",
+)

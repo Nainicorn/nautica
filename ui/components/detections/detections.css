@@ -146,3 +146,12 @@
 .__detections-state--error {
     color: var(--alert);
 }
+
+.__detections-row--new {
+    animation: detectionFadeIn 0.5s ease;
+}
+
+@keyframes detectionFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

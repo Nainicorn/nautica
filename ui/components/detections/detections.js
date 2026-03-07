@@ -10,7 +10,7 @@ function confLevel(confidence) {
 }
 
 function statusClass(status) {
-    if (status === 'tracking') return 'tracking';
+    if (status === 'tracked') return 'tracking';
     if (status === 'flagged') return 'alert';
     if (status === 'lost') return 'lost';
     return 'tracking';
@@ -18,18 +18,30 @@ function statusClass(status) {
 
 const detections = {
     element: null,
+    allItems: [],
+    visibleCount: 0,
+    currentFrame: 0,
+    seenTracks: new Set(),
+    $tbody: null,
+    $badge: null,
 
     init() {
         this.element = document.querySelector('.__detections');
         this._render({ idle: true, badge: '—' });
         events.on('session:selected', (session) => this._load(session.id));
+        events.on('viewer:frame-changed', (frameNum) => this._onFrameChanged(frameNum));
     },
 
     async _load(sessionId) {
         this._render({ loading: true, badge: '...' });
+        this.allItems = [];
+        this.visibleCount = 0;
+        this.currentFrame = 0;
+        this.seenTracks = new Set();
+
         try {
             const data = await getDetections(sessionId);
-            const items = data.detections.map(d => ({
+            this.allItems = data.detections.map(d => ({
                 ...d,
                 confDisplay: d.confidence != null ? (d.confidence * 100).toFixed(1) + '%' : '—',
                 confLevel: d.confidence != null ? confLevel(d.confidence) : 'low',
@@ -37,14 +49,54 @@ const detections = {
                 statusLabel: (d.status || 'unknown').toUpperCase(),
             }));
 
+            // Render table shell with no rows yet
             this._render({
-                detections: items,
-                empty: items.length === 0,
-                badge: items.length > 0 ? `${items.length} objects` : '0',
+                detections: [],
+                empty: this.allItems.length === 0,
+                badge: this.allItems.length > 0 ? '0 objects' : '0',
+                streaming: this.allItems.length > 0,
             });
+
+            this.$tbody = this.element.querySelector('.__detections-tbody');
+            this.$badge = this.element.querySelector('.__detections-badge');
         } catch (err) {
             this._render({ error: true, badge: '—' });
         }
+    },
+
+    _onFrameChanged(frameNum) {
+        if (!this.allItems.length || !this.$tbody) return;
+        if (frameNum < this.currentFrame) {
+            this.$tbody.innerHTML = '';
+            this.visibleCount = 0;
+            this.seenTracks = new Set();
+        }
+        this.currentFrame = frameNum;
+
+        while (this.visibleCount < this.allItems.length) {
+            const item = this.allItems[this.visibleCount];
+            if (item.frame_number != null && item.frame_number > frameNum) break;
+            const key = item.track_id || item.id;
+            if (!this.seenTracks.has(key)) {
+                this.seenTracks.add(key);
+                this.$tbody.insertAdjacentHTML('beforeend', this._buildRow(item));
+            }
+            this.visibleCount++;
+        }
+
+        if (this.$badge) {
+            this.$badge.textContent = `${this.seenTracks.size} vessels`;
+        }
+    },
+
+    _buildRow(item) {
+        return `<tr class="__detections-row--new">
+            <td class="__detections-id">${item.track_id || '—'}</td>
+            <td>${item.object_type || '—'}</td>
+            <td><span class="__detections-conf __detections-conf--${item.confLevel}">${item.confDisplay}</span></td>
+            <td class="__detections-mono">${item.position || '—'}</td>
+            <td><span class="__detections-status __detections-status--${item.statusClass}">${item.statusLabel}</span></td>
+        </tr>`;
     },
 
     _render(context) {

@@ -44,7 +44,7 @@ Drop in a video or image — drone footage, surveillance clip, aerial photo. Fil
 ### 2. Create session
 Backend registers a new analysis session with an ID, timestamp, file reference, and processing status.
 
-**Session statuses:** `pending` → `uploading` → `uploaded` → `processing` → `extracted` → `detecting` → `detection_complete` → `tracking` → `completed` / `failed`
+**Session statuses:** `pending` → `uploading` → `uploaded` → `processing` → `extracted` → `detecting` → `detection_complete` → `tracking` → `tracking_complete` / `failed`
 
 ### 3. Extract frames (video)
 OpenCV breaks the video into individual frames for the detection pipeline.
@@ -118,9 +118,9 @@ backend/
 ├── routes/       — health, sessions, upload, detections, anomalies, reports
 ├── models/       — analysis_session, detection, anomaly, report
 ├── schemas/      — analysis_session, detection, anomaly, report, upload
-├── services/     — video, detection (YOLOv8), tracking, anomaly, report (stubs)
+├── services/     — video, detection (YOLOv8), tracking (IoU + Hungarian), anomaly, report (stubs)
 ├── utils/        — mock_loader
-└── uploads/      — {session_id}/source/, frames/, detections/, annotated/
+└── uploads/      — {session_id}/source/, frames/, detections/, tracking/, annotated/
 ```
 
 ### Dashboard Layout
@@ -187,9 +187,10 @@ backend/
 5. Upload pipeline — session creation + file upload from frontend, progress tracking, sidebar refresh
 6. Video ingestion + frame extraction (OpenCV, stride-based, auto-triggered after upload)
 7. YOLO detection on frames (YOLOv8n, MPS-accelerated, per-frame JSON artifacts, DB persistence)
+8. Object tracking across frames (IoU + Hungarian assignment, persistent VES-XXX IDs, tracking artifact)
 
 ### Current Phase
-**Phase 7 — Object Tracking Across Frames**
+**Phase 8 — Annotated Visual Playback**
 
 ---
 
@@ -197,7 +198,6 @@ backend/
 
 | Phase | Focus |
 |-------|-------|
-| **7** | Object tracking across frames |
 | **8** | Annotated visual playback |
 | **9** | Anomaly detection on tracked behavior |
 | **10** | AI report generation |

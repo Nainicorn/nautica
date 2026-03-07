@@ -31,7 +31,7 @@ def get_detections(session_id: str, db: Session = Depends(get_db)):
                 object_type=d.object_type,
                 confidence=d.confidence,
                 position=f"({d.x:.0f}, {d.y:.0f})" if d.x is not None else None,
-                status="UNTRACKED" if not d.track_id else "TRACKING",
+                status="UNTRACKED" if not d.track_id else "TRACKED",
                 frame_number=d.frame_number,
             )
             for d in db_detections

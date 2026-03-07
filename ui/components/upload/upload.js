@@ -1,6 +1,6 @@
 import template from './upload.hbs';
 import './upload.css';
-import { createSession, processSession } from '../../services/sessions.js';
+import { createSession, processSession, detectSession, trackSession } from '../../services/sessions.js';
 import { uploadFile } from '../../services/api.js';
 import events from '../../services/events.js';
 
@@ -137,18 +137,26 @@ const upload = {
                 progressText.textContent = pct + '%';
             });
 
-            // 3. Upload complete — start frame extraction
+            // 3. Upload complete — run full pipeline
             progressFill.style.width = '100%';
             progressText.textContent = '100%';
             submitBtn.textContent = 'Extracting frames...';
-
             events.emit('sessions:updated');
 
-            const processed = await processSession(session.id);
-
-            // 4. Done — notify and close
+            await processSession(session.id);
             events.emit('sessions:updated');
-            events.emit('session:selected', processed);
+
+            // 4. Run YOLO detection
+            submitBtn.textContent = 'Running detection...';
+            const detected = await detectSession(session.id);
+            events.emit('sessions:updated');
+            events.emit('session:selected', detected);
+
+            // 5. Run object tracking
+            submitBtn.textContent = 'Tracking objects...';
+            const tracked = await trackSession(session.id);
+            events.emit('sessions:updated');
+            events.emit('session:selected', tracked);
 
             setTimeout(() => this.hide(), 300);
         } catch (err) {

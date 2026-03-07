@@ -16,6 +16,14 @@ export function processSession(sessionId) {
     return post(`/sessions/${sessionId}/process`);
 }
 
+export function detectSession(sessionId) {
+    return post(`/sessions/${sessionId}/detect`);
+}
+
+export function trackSession(sessionId) {
+    return post(`/sessions/${sessionId}/track`);
+}
+
 export function deleteSession(sessionId) {
     return del(`/sessions/${sessionId}`);
 }
