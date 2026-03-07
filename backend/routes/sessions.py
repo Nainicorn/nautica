@@ -155,3 +155,33 @@ def track_session(session_id: str, db: Session = Depends(get_db)):
         "track_count": result["track_count"],
         "detections_tracked": result["detections_tracked"],
     }
+
+
+@router.post("/sessions/{session_id}/analyze", response_model=SessionResponse)
+def analyze_session(session_id: str, db: Session = Depends(get_db)):
+    session = db.query(AnalysisSession).filter(AnalysisSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+
+    if session.status != "tracking_complete":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Session status is '{session.status}', expected 'tracking_complete'",
+        )
+
+    try:
+        from services.anomaly_service import run_anomaly_pipeline
+
+        result = run_anomaly_pipeline(session_id, db)
+        db.refresh(session)
+
+    except Exception as e:
+        session.status = "failed"
+        db.commit()
+        raise HTTPException(status_code=500, detail=f"Anomaly detection failed: {str(e)}")
+
+    response = SessionResponse.model_validate(session)
+    return {
+        **response.model_dump(),
+        "anomaly_count": result["anomaly_count"],
+    }

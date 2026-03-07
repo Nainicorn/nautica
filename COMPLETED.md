@@ -311,3 +311,109 @@ uploads/{session_id}/
 - Not auto-chained in upload flow — called via `POST /api/sessions/{id}/track`
 - Frontend has `trackSession()` ready but not wired into upload pipeline yet
 - Allows phase-by-phase debugging and control
+
+## Stage 8: Annotated Visual Playback
+
+- Full frame-by-frame playback engine in the viewer panel
+- Canvas overlay renders bounding boxes with vessel IDs, type labels, and confidence
+- `requestAnimationFrame` playback loop with FPS throttling (10 FPS)
+- Sliding window frame preloader (12 ahead, 8 behind)
+- `ResizeObserver` canvas realignment for responsive rendering
+- Draggable scrubber handle on progress bar
+- Auto-play on session load, replay when pressing play at end
+- Detection log streams live synced to video playback (one row per unique vessel via `seenTracks` dedup)
+- Upload pipeline auto-chains: extract → detect → track
+- Overlay API (`GET /api/sessions/{id}/overlay`) returns ordered frame array with detection bounding boxes
+
+### Backend changes:
+| File | Changes |
+|------|---------|
+| `backend/config.py` | Added `PLAYBACK_TARGET_FPS` |
+| `backend/schemas/playback.py` | New: `BBox`, `FrameDetection`, `FrameOverlay`, `OverlayResponse` |
+| `backend/routes/playback.py` | New: overlay endpoint, groups detections by frame |
+| `backend/main.py` | StaticFiles mount for frames + playback router |
+
+### Frontend changes:
+| File | Changes |
+|------|---------|
+| `ui/services/playback.js` | New: `getOverlayData()`, `getFrameUrl()` |
+| `ui/components/viewer/viewer.hbs` | Rewritten: `<img>` + `<canvas>` + controls |
+| `ui/components/viewer/viewer.css` | Rewritten: canvas positioning, progress bar, loading spinner |
+| `ui/components/viewer/viewer.js` | Full playback engine with all methods |
+| `ui/components/detections/detections.js` | Streaming detection log with dedup |
+| `ui/components/upload/upload.js` | Chained full pipeline on upload |
+
+## Stage 9: Anomaly Detection on Tracked Behavior
+
+- Rule-based anomaly detection analyzing tracked vessel behavior
+- Four anomaly rules: loitering, restricted zone entry, convergence, abrupt motion
+- Anomaly service loads `tracks.json` artifact and applies rules
+- Results persisted to DB and saved as `anomalies/anomalies.json` artifact
+- Anomaly timeline markers rendered on viewer progress bar (severity-colored, click-to-seek)
+- Anomalies route updated: DB-first query with mock fallback
+
+### Detection model upgrade:
+- Upgraded from YOLOv8n (nano) to YOLOv8m (medium) for better accuracy
+- Lowered confidence threshold from 0.25 to 0.20 for better recall
+- Added vessel size classification (Small/Medium/Large vessel) based on bbox area ratio
+- Extended MARITIME_LABELS mapping for more COCO classes
+
+### Anomaly rules:
+| Rule | Severity | Description |
+|------|----------|-------------|
+| Loitering | warning/critical | Vessel stationary beyond threshold duration |
+| Restricted zone | critical | Vessel center enters defined rectangular zone |
+| Convergence | info/warning | Multiple vessels within distance for N consecutive frames (connected-component clustering) |
+| Abrupt motion | info/warning | Large frame-to-frame position displacement |
+
+### Config parameters added:
+- `LOITERING_MIN_FRAMES`, `LOITERING_MAX_DISPLACEMENT_PX`, `LOITERING_CRITICAL_FRAMES`
+- `CONVERGENCE_DISTANCE_PX`, `CONVERGENCE_MIN_VESSELS`, `CONVERGENCE_MIN_FRAMES`
+- `RESTRICTED_ZONES` (default: dev demo zone for testing)
+- `ABRUPT_MOTION_PX_PER_FRAME`
+
+### Backend changes:
+| File | Changes |
+|------|---------|
+| `backend/config.py` | YOLOv8m, lower threshold, anomaly thresholds, restricted zones |
+| `backend/models/anomaly.py` | Added `frame_number`, `meta` columns |
+| `backend/models/detection.py` | Added `vessel_size` column |
+| `backend/schemas/anomaly.py` | Added `frame_number: int` |
+| `backend/schemas/detection.py` | Added `vessel_size` |
+| `backend/schemas/playback.py` | Added `vessel_size` to `FrameDetection` |
+| `backend/services/anomaly_service.py` | Full rule engine + pipeline orchestrator |
+| `backend/services/detection_service.py` | Vessel size classification, expanded labels |
+| `backend/routes/sessions.py` | Added `POST /sessions/{id}/analyze` |
+| `backend/routes/anomalies.py` | DB-first query with JSON track_ids parsing |
+| `backend/routes/playback.py` | Added `vessel_size` to overlay data |
+| `backend/routes/detections.py` | Added `vessel_size` to response |
+| `backend/main.py` | Migration for `vessel_size`, `frame_number`, `meta` columns |
+| `sample-data/mock-json/anomalies.json` | Added `frame_number` to mock records |
+
+### Frontend changes:
+| File | Changes |
+|------|---------|
+| `ui/services/sessions.js` | Added `analyzeSession()` |
+| `ui/components/sidebar/sidebar.js` | Added `anomaly_detection`/`anomaly_complete` badges |
+| `ui/components/viewer/viewer.js` | Anomaly timeline markers, `analysis_complete` in PLAYBACK_STATUSES, vessel_size in labels |
+| `ui/components/viewer/viewer.css` | Anomaly marker styles |
+| `ui/components/detections/detections.js` | Shows vessel_size in TYPE column |
+
+### Status transitions (updated):
+`tracking_complete` → `anomaly_detection` → `anomaly_complete` (success) / `failed` (error)
+
+### Directory structure (updated):
+```
+uploads/{session_id}/
+  source/      ← original uploaded file
+  frames/      ← extracted frames
+  detections/  ← per-frame detection JSON
+  tracking/    ← tracks.json artifact
+  anomalies/   ← anomalies.json artifact
+  annotated/   ← empty, prepared for future use
+```
+
+### Anomaly detection is triggered separately:
+- Called via `POST /api/sessions/{id}/analyze`
+- Not auto-chained in upload pipeline — allows threshold tuning and debugging
+- Frontend has `analyzeSession()` ready for future pipeline integration

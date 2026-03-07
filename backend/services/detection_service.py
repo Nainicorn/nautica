@@ -13,7 +13,20 @@ logger = logging.getLogger(__name__)
 # COCO class ID → maritime-friendly label
 MARITIME_LABELS = {
     0: "Person",
+    5: "Bus",
+    7: "Truck",
     8: "Boat",
+    14: "Bird",
+    33: "Kite",
+    36: "Surfboard",
+    64: "Potted plant",
+}
+
+# Vessel size classification by bounding box area ratio to frame area
+VESSEL_SIZE_THRESHOLDS = {
+    "Small vessel": 0.01,    # < 1% of frame
+    "Medium vessel": 0.05,   # 1-5% of frame
+    "Large vessel": 1.0,     # > 5% of frame
 }
 
 
@@ -54,7 +67,7 @@ class DetectionService:
 
         Returns:
             List of detection dicts with keys:
-            object_type, confidence, x, y, width, height.
+            object_type, confidence, x, y, width, height, vessel_size.
         """
         results = self.model(
             frame_path,
@@ -65,19 +78,34 @@ class DetectionService:
 
         detections = []
         for result in results:
+            img_h, img_w = result.orig_shape
+            frame_area = img_w * img_h
+
             for box in result.boxes:
                 cls_id = int(box.cls[0])
                 cls_name = result.names[cls_id]
                 label = MARITIME_LABELS.get(cls_id, cls_name.capitalize())
 
                 x1, y1, x2, y2 = box.xyxy[0].tolist()
+                box_w = x2 - x1
+                box_h = y2 - y1
+
+                vessel_size = None
+                if label == "Boat":
+                    area_ratio = (box_w * box_h) / frame_area
+                    for size_label, threshold in VESSEL_SIZE_THRESHOLDS.items():
+                        if area_ratio < threshold:
+                            vessel_size = size_label
+                            break
+
                 detections.append({
                     "object_type": label,
                     "confidence": round(float(box.conf[0]), 4),
                     "x": round(x1, 2),
                     "y": round(y1, 2),
-                    "width": round(x2 - x1, 2),
-                    "height": round(y2 - y1, 2),
+                    "width": round(box_w, 2),
+                    "height": round(box_h, 2),
+                    "vessel_size": vessel_size,
                 })
 
         return detections
@@ -146,6 +174,7 @@ def run_detection_pipeline(session_id: str, db) -> dict:
                 width=det["width"],
                 height=det["height"],
                 frame_number=frame_num,
+                vessel_size=det.get("vessel_size"),
             )
             db.add(detection)
             total_detections += 1

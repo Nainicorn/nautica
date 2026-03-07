@@ -12,6 +12,7 @@ class AnomalyResponse(BaseModel):
     description: Optional[str] = None
     track_ids: Optional[List[str]] = None
     meta: Optional[str] = None
+    frame_number: int
     created_at: Optional[datetime] = None
 
 

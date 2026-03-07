@@ -24,6 +24,10 @@ export function trackSession(sessionId) {
     return post(`/sessions/${sessionId}/track`);
 }
 
+export function analyzeSession(sessionId) {
+    return post(`/sessions/${sessionId}/analyze`);
+}
+
 export function deleteSession(sessionId) {
     return del(`/sessions/${sessionId}`);
 }

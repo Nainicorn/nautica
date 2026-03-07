@@ -15,6 +15,7 @@ class FrameDetection(BaseModel):
     track_id: Optional[str] = None
     object_type: Optional[str] = None
     confidence: Optional[float] = None
+    vessel_size: Optional[str] = None
     bbox: BBox
 
 

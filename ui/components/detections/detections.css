@@ -151,6 +151,14 @@
     animation: detectionFadeIn 0.5s ease;
 }
 
+.__detections-row--clickable {
+    cursor: pointer;
+}
+
+.__detections-row--clickable:hover {
+    background: rgba(25, 194, 201, 0.08);
+}
+
 @keyframes detectionFadeIn {
     from { opacity: 0; }
     to { opacity: 1; }

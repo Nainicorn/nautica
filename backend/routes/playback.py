@@ -44,6 +44,7 @@ def get_overlay(session_id: str, db: Session = Depends(get_db)):
                     track_id=d.track_id,
                     object_type=d.object_type,
                     confidence=d.confidence,
+                    vessel_size=d.vessel_size,
                     bbox=BBox(x=d.x, y=d.y, width=d.width, height=d.height),
                 )
             )

@@ -12,6 +12,7 @@ class DetectionResponse(BaseModel):
     position: Optional[str] = None
     status: Optional[str] = None
     frame_number: Optional[int] = None
+    vessel_size: Optional[str] = None
 
 
 class DetectionList(BaseModel):

@@ -16,4 +16,5 @@ class Detection(Base):
     width = Column(Float, nullable=True)
     height = Column(Float, nullable=True)
     frame_number = Column(Integer, nullable=True)
+    vessel_size = Column(String, nullable=True)
     created_at = Column(DateTime, server_default=func.now())

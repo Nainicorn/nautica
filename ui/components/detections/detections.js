@@ -59,6 +59,15 @@ const detections = {
 
             this.$tbody = this.element.querySelector('.__detections-tbody');
             this.$badge = this.element.querySelector('.__detections-badge');
+
+            this.$tbody.addEventListener('click', (e) => {
+                const row = e.target.closest('tr[data-frame]');
+                if (!row) return;
+                const frameNum = parseInt(row.dataset.frame, 10);
+                if (!isNaN(frameNum)) {
+                    events.emit('detection:seek', frameNum);
+                }
+            });
         } catch (err) {
             this._render({ error: true, badge: '—' });
         }
@@ -90,9 +99,10 @@ const detections = {
     },
 
     _buildRow(item) {
-        return `<tr class="__detections-row--new">
+        const frameAttr = item.frame_number != null ? `data-frame="${item.frame_number}"` : '';
+        return `<tr class="__detections-row--new __detections-row--clickable" ${frameAttr}>
             <td class="__detections-id">${item.track_id || '—'}</td>
-            <td>${item.object_type || '—'}</td>
+            <td>${item.vessel_size || item.object_type || '—'}</td>
             <td><span class="__detections-conf __detections-conf--${item.confLevel}">${item.confDisplay}</span></td>
             <td class="__detections-mono">${item.position || '—'}</td>
             <td><span class="__detections-status __detections-status--${item.statusClass}">${item.statusLabel}</span></td>

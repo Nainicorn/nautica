@@ -186,11 +186,13 @@ backend/
 4. Frontend ↔ backend read integration (API service layer, event bus, all panels wired to API)
 5. Upload pipeline — session creation + file upload from frontend, progress tracking, sidebar refresh
 6. Video ingestion + frame extraction (OpenCV, stride-based, auto-triggered after upload)
-7. YOLO detection on frames (YOLOv8n, MPS-accelerated, per-frame JSON artifacts, DB persistence)
+7. YOLO detection on frames (YOLOv8m, MPS-accelerated, per-frame JSON artifacts, DB persistence, vessel size classification)
 8. Object tracking across frames (IoU + Hungarian assignment, persistent VES-XXX IDs, tracking artifact)
+9. Annotated visual playback (frame-by-frame viewer, canvas overlays, FPS-throttled playback, streaming detection log)
+10. Anomaly detection on tracked behavior (loitering, restricted zone, convergence, abrupt motion rules)
 
 ### Current Phase
-**Phase 8 — Annotated Visual Playback**
+**Phase 10 — AI report generation**
 
 ---
 
@@ -198,10 +200,9 @@ backend/
 
 | Phase | Focus |
 |-------|-------|
-| **8** | Annotated visual playback |
-| **9** | Anomaly detection on tracked behavior |
-| **10** | AI report generation |
+| **10** | AI report generation (current) |
 | **11** | Cloud deployment (AWS) |
+| **12** | file cleanup, laymans term explanation full project, create readme, make sure everything is prepped to post on linkedin |
 
 ---
 

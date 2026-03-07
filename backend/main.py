@@ -26,11 +26,19 @@ def _migrate_columns():
     """Add missing columns to existing tables (dev-only migration)."""
     from sqlalchemy import text, inspect
     inspector = inspect(engine)
-    columns = {col["name"] for col in inspector.get_columns("analysis_sessions")}
+    session_cols = {col["name"] for col in inspector.get_columns("analysis_sessions")}
+    detection_cols = {col["name"] for col in inspector.get_columns("detections")}
+    anomaly_cols = {col["name"] for col in inspector.get_columns("anomalies")}
     with engine.connect() as conn:
-        if "frame_count" not in columns:
+        if "frame_count" not in session_cols:
             conn.execute(text("ALTER TABLE analysis_sessions ADD COLUMN frame_count INTEGER"))
-            conn.commit()
+        if "vessel_size" not in detection_cols:
+            conn.execute(text("ALTER TABLE detections ADD COLUMN vessel_size TEXT"))
+        if "frame_number" not in anomaly_cols:
+            conn.execute(text("ALTER TABLE anomalies ADD COLUMN frame_number INTEGER DEFAULT 0"))
+        if "meta" not in anomaly_cols:
+            conn.execute(text("ALTER TABLE anomalies ADD COLUMN meta TEXT"))
+        conn.commit()
 
 
 def _ensure_uploads_dir():

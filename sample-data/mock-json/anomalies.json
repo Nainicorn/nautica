@@ -7,6 +7,7 @@
         "description": "Loitering detected — Sector 4",
         "track_ids": ["VES-003"],
         "meta": "Track ID: VES-003 · Duration: 72s",
+        "frame_number": 45,
         "created_at": "2026-03-06T14:30:00Z"
     },
     {
@@ -17,6 +18,7 @@
         "description": "Restricted zone approach",
         "track_ids": ["VES-001"],
         "meta": "Track ID: VES-001 · Distance: 120m",
+        "frame_number": 22,
         "created_at": "2026-03-06T14:27:00Z"
     },
     {
@@ -27,6 +29,7 @@
         "description": "Vessel convergence detected",
         "track_ids": ["VES-001", "VES-002"],
         "meta": "Tracks: VES-001, VES-002 · Gap: 45m",
+        "frame_number": 10,
         "created_at": "2026-03-06T14:24:00Z"
     }
 ]
