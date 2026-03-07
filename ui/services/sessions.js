@@ -1,4 +1,4 @@
-import { get, post } from './api.js';
+import { get, post, del } from './api.js';
 
 export function getSessions() {
     return get('/sessions');
@@ -14,4 +14,8 @@ export function createSession(name, fileType) {
 
 export function processSession(sessionId) {
     return post(`/sessions/${sessionId}/process`);
+}
+
+export function deleteSession(sessionId) {
+    return del(`/sessions/${sessionId}`);
 }

@@ -44,7 +44,7 @@ Drop in a video or image — drone footage, surveillance clip, aerial photo. Fil
 ### 2. Create session
 Backend registers a new analysis session with an ID, timestamp, file reference, and processing status.
 
-**Session statuses:** `pending` → `uploading` → `uploaded` → `processing` → `extracted` → `detecting` → `tracking` → `completed` / `failed`
+**Session statuses:** `pending` → `uploading` → `uploaded` → `processing` → `extracted` → `detecting` → `detection_complete` → `tracking` → `completed` / `failed`
 
 ### 3. Extract frames (video)
 OpenCV breaks the video into individual frames for the detection pipeline.
@@ -118,9 +118,9 @@ backend/
 ├── routes/       — health, sessions, upload, detections, anomalies, reports
 ├── models/       — analysis_session, detection, anomaly, report
 ├── schemas/      — analysis_session, detection, anomaly, report, upload
-├── services/     — video, detection, tracking, anomaly, report (stubs)
+├── services/     — video, detection (YOLOv8), tracking, anomaly, report (stubs)
 ├── utils/        — mock_loader
-└── uploads/      — {session_id}/source/ (uploaded files)
+└── uploads/      — {session_id}/source/, frames/, detections/, annotated/
 ```
 
 ### Dashboard Layout
@@ -186,9 +186,10 @@ backend/
 4. Frontend ↔ backend read integration (API service layer, event bus, all panels wired to API)
 5. Upload pipeline — session creation + file upload from frontend, progress tracking, sidebar refresh
 6. Video ingestion + frame extraction (OpenCV, stride-based, auto-triggered after upload)
+7. YOLO detection on frames (YOLOv8n, MPS-accelerated, per-frame JSON artifacts, DB persistence)
 
 ### Current Phase
-**Phase 6 — YOLO Detection on Frames**
+**Phase 7 — Object Tracking Across Frames**
 
 ---
 
@@ -196,7 +197,6 @@ backend/
 
 | Phase | Focus |
 |-------|-------|
-| **6** | YOLO detection on frames |
 | **7** | Object tracking across frames |
 | **8** | Annotated visual playback |
 | **9** | Anomaly detection on tracked behavior |
@@ -216,7 +216,7 @@ Oil slick pattern recognition from aerial imagery + spill drift trajectory estim
 ### Nautica Reef (v4) — Marine Wildlife Monitoring
 Marine animal detection and tracking — dolphins, whales, turtles, sharks. Migration and behavior monitoring.
 
-### Nautica Sentinel (v5) — Ocean Traveler Safety
+### Nautica SOS (v5) — Ocean Traveler Safety
 Real-time tracking of solo rowers, sailors, and open water cruisers. Distress detection and search-and-rescue alerting.
 
-Tsunami detection.
+### Nautica Bunker (v6) - Tsunami & Hurricane detection

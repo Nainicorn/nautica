@@ -148,7 +148,7 @@ backend/
 ```
 uploads/{session_id}/source/{original_filename}
 ```
-Future phases will add: `frames/`, `detections/`, `annotated/`
+Future phases will add: `annotated/` (rendering)
 
 ### Events used:
 - `sessions:updated` — triggers sidebar session list reload
@@ -188,3 +188,55 @@ uploads/{session_id}/
   source/    ← original uploaded file
   frames/    ← extracted frames (frame_0001.jpg, frame_0002.jpg, ...)
 ```
+
+## Stage 6: YOLO Detection on Frames
+
+- YOLOv8n object detection on extracted frames via `ultralytics`
+- MPS (Apple Silicon GPU) acceleration with CPU fallback
+- Per-frame detection JSON artifacts saved to disk
+- Detection records persisted to SQLite
+- Detection API route switched from mock-only to DB-first with mock fallback
+
+### Backend changes:
+| File | Changes |
+|------|---------|
+| `requirements.txt` | Added `ultralytics` |
+| `config.py` | Added `YOLO_MODEL`, `YOLO_CONFIDENCE_THRESHOLD`, `YOLO_MAX_DETECTIONS` |
+| `services/detection_service.py` | Replaced stub with full YOLOv8 implementation. `DetectionService` loads model once (singleton) on first call, runs on MPS/CPU. `detect()` returns bounding boxes with maritime labels. `run_detection_pipeline()` orchestrates detection across all frames, saves per-frame JSON, persists to DB, manages session status. |
+| `routes/sessions.py` | Added `POST /api/sessions/{session_id}/detect` — validates status is `extracted`, runs detection pipeline, returns session + detection_count/frames_processed |
+| `routes/detections.py` | Queries Detection model from DB first (ordered by frame_number), falls back to mock JSON for demo sessions. Synthesizes `position` from pixel coords, `status` as "UNTRACKED" for untracked detections. |
+| `.gitignore` | Added `.venv/`, `*.pt`, `backend/uploads/` |
+
+### COCO-to-maritime label mapping:
+- Class 0 ("person") → "Person"
+- Class 8 ("boat") → "Boat"
+- All other COCO classes → capitalized COCO name
+
+### Detection pipeline flow:
+1. `POST /api/sessions/{id}/detect` validates session status is `extracted`
+2. Sets status → `detecting`
+3. Iterates sorted `frame_*.jpg` files
+4. Runs YOLOv8 inference on each frame
+5. Saves detection JSON to `uploads/{session_id}/detections/frame_XXXX.json`
+6. Persists Detection records to SQLite (commit per frame)
+7. Creates empty `uploads/{session_id}/annotated/` directory (Phase 8 prep)
+8. Sets status → `detection_complete`
+9. Returns `{detection_count, frames_processed}`
+
+### Status transitions (updated):
+`extracted` → `detecting` → `detection_complete` (success) / `failed` (error)
+
+### Directory structure (updated):
+```
+uploads/{session_id}/
+  source/      ← original uploaded file
+  frames/      ← extracted frames (frame_0001.jpg, ...)
+  detections/  ← per-frame detection JSON (frame_0001.json, ...)
+  annotated/   ← empty, prepared for Phase 8
+```
+
+### No frontend changes needed:
+- Detection table continues to work — same API schema
+- `track_id` shows blank (null until Phase 7)
+- `position` shows pixel coords instead of GPS
+- `status` shows "UNTRACKED" instead of "TRACKING"

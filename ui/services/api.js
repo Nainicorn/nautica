@@ -26,6 +26,10 @@ export function post(path, body) {
     });
 }
 
+export function del(path) {
+    return request(path, { method: 'DELETE' });
+}
+
 export function uploadFile(sessionId, file, onProgress) {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();

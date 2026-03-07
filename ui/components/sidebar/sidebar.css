@@ -103,6 +103,34 @@ body[data-collapsed="true"] .__sidebar-header {
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+    flex: 1;
+}
+
+.__sidebar-session-delete {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    transition: all var(--transition);
+}
+
+.__sidebar-session-delete .material-icon {
+    font-size: 14px;
+}
+
+.__sidebar-session:hover .__sidebar-session-delete {
+    display: flex;
+}
+
+.__sidebar-session-delete:hover {
+    color: var(--alert);
+    background: var(--alert-dim);
 }
 
 body[data-collapsed="true"] .__sidebar-session-info {

@@ -1,6 +1,6 @@
 import template from './sidebar.hbs';
 import './sidebar.css';
-import { getSessions } from '../../services/sessions.js';
+import { getSessions, deleteSession } from '../../services/sessions.js';
 import events from '../../services/events.js';
 import upload from '../upload/upload.js';
 
@@ -83,10 +83,26 @@ const sidebar = {
     },
 
     _bindListeners() {
-        this.element.addEventListener('click', (e) => {
+        this.element.addEventListener('click', async (e) => {
             const $newBtn = e.target.closest('.__sidebar-new-btn');
             if ($newBtn) {
                 upload.show();
+                return;
+            }
+
+            const $deleteBtn = e.target.closest('.__sidebar-session-delete');
+            if ($deleteBtn) {
+                const deleteId = $deleteBtn.dataset.deleteId;
+                if (!deleteId) return;
+                try {
+                    await deleteSession(deleteId);
+                    if (this.activeSessionId === deleteId) {
+                        this.activeSessionId = null;
+                    }
+                    this._loadSessions();
+                } catch (err) {
+                    console.error('Failed to delete session:', err);
+                }
                 return;
             }
 
