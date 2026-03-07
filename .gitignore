@@ -1,0 +1,15 @@
+node_modules/
+dist/
+venv/
+.DS_Store
+*.log
+.env
+.env.*
+*.db
+__pycache__/
+*.pyc
+sample-data/demo-clips/*.mp4
+sample-data/demo-clips/*.avi
+sample-data/demo-clips/*.mov
+sample-data/test-images/*.jpg
+sample-data/test-images/*.png

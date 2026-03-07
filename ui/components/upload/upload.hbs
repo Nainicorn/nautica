@@ -1,0 +1,45 @@
+<div class="__upload-modal">
+    <div class="__upload-panel">
+        <div class="__upload-header">
+            <div class="__upload-header-left">
+                <span class="material-icon">cloud_upload</span>
+                <span class="__upload-title">Upload Footage</span>
+            </div>
+            <button class="__upload-close" title="Close">
+                <span class="material-icon">close</span>
+            </button>
+        </div>
+        <div class="__upload-body">
+            <input type="file" class="__upload-file-input" accept=".mp4,.mov,.avi,.jpg,.jpeg,.png" hidden />
+            <div class="__upload-dropzone">
+                <span class="material-icon __upload-dropzone-icon">video_file</span>
+                <span class="__upload-dropzone-text">Drop video or image files here</span>
+                <span class="__upload-dropzone-hint">Supports MP4, AVI, MOV, JPG, PNG — max 200MB</span>
+                <button class="__upload-browse-btn">Browse Files</button>
+            </div>
+            <div class="__upload-preview" style="display:none;">
+                <div class="__upload-preview-info">
+                    <span class="material-icon __upload-preview-icon">description</span>
+                    <div class="__upload-preview-details">
+                        <span class="__upload-preview-name"></span>
+                        <span class="__upload-preview-size"></span>
+                    </div>
+                    <button class="__upload-preview-remove" title="Remove file">
+                        <span class="material-icon">close</span>
+                    </button>
+                </div>
+                <div class="__upload-progress" style="display:none;">
+                    <div class="__upload-progress-bar">
+                        <div class="__upload-progress-fill"></div>
+                    </div>
+                    <span class="__upload-progress-text">0%</span>
+                </div>
+            </div>
+            <div class="__upload-error" style="display:none;"></div>
+        </div>
+        <div class="__upload-footer">
+            <button class="__upload-cancel-btn">Cancel</button>
+            <button class="__upload-submit-btn" disabled>Start Analysis</button>
+        </div>
+    </div>
+</div>

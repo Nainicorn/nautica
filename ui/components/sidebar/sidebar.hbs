@@ -1,0 +1,35 @@
+<div class="__sidebar-header">
+    <span class="__sidebar-label">SESSIONS</span>
+    <button class="__sidebar-new-btn" title="New Analysis">
+        <span class="material-icon">add</span>
+        <span class="__sidebar-new-text">New Analysis</span>
+    </button>
+</div>
+<div class="__sidebar-sessions">
+    {{#if loading}}
+        <div class="__sidebar-state">
+            <span class="__sidebar-state-text">Loading sessions...</span>
+        </div>
+    {{else if error}}
+        <div class="__sidebar-state">
+            <span class="__sidebar-state-text __sidebar-state-text--error">Failed to load sessions</span>
+        </div>
+    {{else if empty}}
+        <div class="__sidebar-state">
+            <span class="__sidebar-state-text">No sessions yet</span>
+        </div>
+    {{else}}
+        {{#each sessions}}
+            <div class="__sidebar-session{{#if this.active}} __sidebar-session--active{{/if}}" data-session-id="{{this.id}}">
+                <div class="__sidebar-session-indicator"></div>
+                <div class="__sidebar-session-info">
+                    <span class="__sidebar-session-name">{{this.name}}</span>
+                    <span class="__sidebar-session-meta">
+                        <span class="__sidebar-session-badge __sidebar-session-badge--{{this.badgeClass}}">{{this.badgeLabel}}</span>
+                        <span class="__sidebar-session-date">{{this.date}}</span>
+                    </span>
+                </div>
+            </div>
+        {{/each}}
+    {{/if}}
+</div>

@@ -1,0 +1,58 @@
+[
+    {
+        "id": "det_001",
+        "session_id": "session_harbor_sweep_04",
+        "track_id": "VES-001",
+        "object_type": "Cargo Ship",
+        "confidence": 0.942,
+        "x": 340.52,
+        "y": 180.44,
+        "width": 120.0,
+        "height": 45.0,
+        "frame_number": 142,
+        "status": "tracking",
+        "position": "34.052°N 118.244°W"
+    },
+    {
+        "id": "det_002",
+        "session_id": "session_harbor_sweep_04",
+        "track_id": "VES-002",
+        "object_type": "Fishing Boat",
+        "confidence": 0.897,
+        "x": 510.30,
+        "y": 290.15,
+        "width": 80.0,
+        "height": 30.0,
+        "frame_number": 142,
+        "status": "tracking",
+        "position": "34.048°N 118.251°W"
+    },
+    {
+        "id": "det_003",
+        "session_id": "session_harbor_sweep_04",
+        "track_id": "VES-003",
+        "object_type": "Unknown",
+        "confidence": 0.721,
+        "x": 680.10,
+        "y": 120.80,
+        "width": 55.0,
+        "height": 25.0,
+        "frame_number": 142,
+        "status": "flagged",
+        "position": "34.055°N 118.239°W"
+    },
+    {
+        "id": "det_004",
+        "session_id": "session_harbor_sweep_04",
+        "track_id": "VES-004",
+        "object_type": "Sailboat",
+        "confidence": 0.915,
+        "x": 200.75,
+        "y": 350.60,
+        "width": 65.0,
+        "height": 35.0,
+        "frame_number": 98,
+        "status": "lost",
+        "position": "34.043°N 118.260°W"
+    }
+]

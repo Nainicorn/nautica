@@ -1,0 +1,43 @@
+<div class="__detections-container">
+    <div class="__detections-header">
+        <div class="__detections-header-left">
+            <span class="material-icon">track_changes</span>
+            <span class="__detections-title">DETECTION LOG</span>
+        </div>
+        <span class="__detections-badge">{{badge}}</span>
+    </div>
+    <div class="__detections-table-wrap">
+        {{#if loading}}
+            <div class="__detections-state">Loading detections...</div>
+        {{else if error}}
+            <div class="__detections-state __detections-state--error">Failed to load detections</div>
+        {{else if empty}}
+            <div class="__detections-state">No detections for this session</div>
+        {{else if idle}}
+            <div class="__detections-state">Select a session to view detections</div>
+        {{else}}
+            <table class="__detections-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>TYPE</th>
+                        <th>CONFIDENCE</th>
+                        <th>POSITION</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each detections}}
+                        <tr>
+                            <td class="__detections-id">{{this.track_id}}</td>
+                            <td>{{this.object_type}}</td>
+                            <td><span class="__detections-conf __detections-conf--{{this.confLevel}}">{{this.confDisplay}}</span></td>
+                            <td class="__detections-mono">{{this.position}}</td>
+                            <td><span class="__detections-status __detections-status--{{this.statusClass}}">{{this.statusLabel}}</span></td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        {{/if}}
+    </div>
+</div>

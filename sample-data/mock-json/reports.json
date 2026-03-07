@@ -1,0 +1,7 @@
+{
+    "session_id": "session_harbor_sweep_04",
+    "summary": "Four vessels were detected during the observation window across the monitored maritime zone. One vessel (VES-003) remained stationary near Sector 4 for approximately 72 seconds, which may indicate loitering behavior. Two vessels (VES-001, VES-002) were observed converging toward a common point with a closing gap of 45 meters.",
+    "anomalies_text": "VES-003 has been flagged for sustained stationary positioning. VES-001 trajectory indicates potential restricted zone approach — currently 120m from boundary. Recommend continued monitoring of convergence pattern between VES-001 and VES-002.",
+    "recommendation": "Maintain active tracking on all flagged vessels. Escalate VES-003 loitering alert if duration exceeds 120 seconds. Dispatch notification if VES-001 crosses within 50m of restricted boundary.",
+    "generated_at": "2026-03-06T14:32:00Z"
+}

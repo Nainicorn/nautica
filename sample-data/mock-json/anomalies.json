@@ -1,0 +1,32 @@
+[
+    {
+        "id": "anom_001",
+        "session_id": "session_harbor_sweep_04",
+        "anomaly_type": "loitering",
+        "severity": "critical",
+        "description": "Loitering detected — Sector 4",
+        "track_ids": ["VES-003"],
+        "meta": "Track ID: VES-003 · Duration: 72s",
+        "created_at": "2026-03-06T14:30:00Z"
+    },
+    {
+        "id": "anom_002",
+        "session_id": "session_harbor_sweep_04",
+        "anomaly_type": "restricted_zone",
+        "severity": "warning",
+        "description": "Restricted zone approach",
+        "track_ids": ["VES-001"],
+        "meta": "Track ID: VES-001 · Distance: 120m",
+        "created_at": "2026-03-06T14:27:00Z"
+    },
+    {
+        "id": "anom_003",
+        "session_id": "session_harbor_sweep_04",
+        "anomaly_type": "convergence",
+        "severity": "info",
+        "description": "Vessel convergence detected",
+        "track_ids": ["VES-001", "VES-002"],
+        "meta": "Tracks: VES-001, VES-002 · Gap: 45m",
+        "created_at": "2026-03-06T14:24:00Z"
+    }
+]

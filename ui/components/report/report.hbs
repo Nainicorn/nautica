@@ -1,0 +1,33 @@
+<div class="__report-container">
+    <div class="__report-header">
+        <div class="__report-header-left">
+            <span class="material-icon">description</span>
+            <span class="__report-title">INTELLIGENCE REPORT</span>
+        </div>
+        <span class="__report-timestamp">Generated: {{timestamp}}</span>
+    </div>
+    <div class="__report-body">
+        {{#if loading}}
+            <div class="__report-state">Loading report...</div>
+        {{else if error}}
+            <div class="__report-state __report-state--error">Failed to load report</div>
+        {{else if empty}}
+            <div class="__report-state">No report generated for this session</div>
+        {{else if idle}}
+            <div class="__report-state">Select a session to view the intelligence report</div>
+        {{else}}
+            <div class="__report-section">
+                <div class="__report-section-label">SUMMARY</div>
+                <p class="__report-text">{{summary}}</p>
+            </div>
+            <div class="__report-section">
+                <div class="__report-section-label">ANOMALIES</div>
+                <p class="__report-text">{{anomalies_text}}</p>
+            </div>
+            <div class="__report-section">
+                <div class="__report-section-label">RECOMMENDATION</div>
+                <p class="__report-text">{{recommendation}}</p>
+            </div>
+        {{/if}}
+    </div>
+</div>

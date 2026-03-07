@@ -1,0 +1,31 @@
+<div class="__alerts-container">
+    <div class="__alerts-header">
+        <div class="__alerts-header-left">
+            <span class="material-icon">warning</span>
+            <span class="__alerts-title">ALERTS</span>
+        </div>
+        <span class="__alerts-count">{{count}}</span>
+    </div>
+    <div class="__alerts-list">
+        {{#if loading}}
+            <div class="__alerts-state">Loading alerts...</div>
+        {{else if error}}
+            <div class="__alerts-state __alerts-state--error">Failed to load alerts</div>
+        {{else if empty}}
+            <div class="__alerts-state">No anomalies detected</div>
+        {{else if idle}}
+            <div class="__alerts-state">Select a session to view alerts</div>
+        {{else}}
+            {{#each anomalies}}
+                <div class="__alerts-item __alerts-item--{{this.severity}}">
+                    <div class="__alerts-item-dot __alerts-item-dot--{{this.severity}}"></div>
+                    <div class="__alerts-item-content">
+                        <span class="__alerts-item-text">{{this.description}}</span>
+                        <span class="__alerts-item-meta">{{this.meta}}</span>
+                    </div>
+                    <span class="__alerts-item-time">{{this.timeAgo}}</span>
+                </div>
+            {{/each}}
+        {{/if}}
+    </div>
+</div>

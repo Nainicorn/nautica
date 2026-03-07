@@ -1,0 +1,34 @@
+[
+    {
+        "id": "session_harbor_sweep_04",
+        "name": "Harbor Sweep 04",
+        "status": "processing",
+        "file_path": "uploads/session_harbor_sweep_04/harbor_sweep_04.mp4",
+        "file_type": "video",
+        "source_filename": "harbor_sweep_04.mp4"
+    },
+    {
+        "id": "session_channel_monitor",
+        "name": "Channel Monitor",
+        "status": "completed",
+        "file_path": "uploads/session_channel_monitor/channel_monitor.mp4",
+        "file_type": "video",
+        "source_filename": "channel_monitor.mp4"
+    },
+    {
+        "id": "session_coastal_patrol_b7",
+        "name": "Coastal Patrol B7",
+        "status": "completed",
+        "file_path": "uploads/session_coastal_patrol_b7/coastal_patrol.mp4",
+        "file_type": "video",
+        "source_filename": "coastal_patrol.mp4"
+    },
+    {
+        "id": "session_port_entry_scan",
+        "name": "Port Entry Scan",
+        "status": "completed",
+        "file_path": "uploads/session_port_entry_scan/port_entry.jpg",
+        "file_type": "image",
+        "source_filename": "port_entry.jpg"
+    }
+]
