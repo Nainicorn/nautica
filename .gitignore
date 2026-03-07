@@ -1,6 +1,7 @@
 node_modules/
 dist/
 venv/
+.venv/
 .DS_Store
 *.log
 .env
@@ -8,6 +9,8 @@ venv/
 *.db
 __pycache__/
 *.pyc
+*.pt
+backend/uploads/
 sample-data/demo-clips/*.mp4
 sample-data/demo-clips/*.avi
 sample-data/demo-clips/*.mov
