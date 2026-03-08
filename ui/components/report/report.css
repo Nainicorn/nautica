@@ -32,6 +32,18 @@
     letter-spacing: 0.15em;
 }
 
+.__report-demo-badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--warning);
+    border: 1px solid var(--warning);
+    padding: 1px 6px;
+    border-radius: 2px;
+    margin-left: 8px;
+}
+
 .__report-timestamp {
     font-family: var(--font-mono);
     font-size: 10px;

@@ -3,12 +3,14 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     DB_URL: str = "sqlite:///./nautica.db"
+    UPLOADS_DIR: str = ""
+    CORS_ORIGINS: str = "http://localhost:5001,http://127.0.0.1:5001,http://localhost:5173,http://localhost:3000"
     S3_UPLOAD_BUCKET: str = "nautica-uploads"
     S3_RESULTS_BUCKET: str = "nautica-results"
     AWS_REGION: str = "us-east-1"
     FRAME_STRIDE: int = 10
     MAX_FRAMES: int = 300
-    YOLO_MODEL: str = "yolov8m.pt"
+    YOLO_MODEL: str = "yolov8n.pt"
     YOLO_CONFIDENCE_THRESHOLD: float = 0.20
     YOLO_MAX_DETECTIONS: int = 50
     IOU_THRESHOLD: float = 0.2
@@ -31,6 +33,14 @@ class Settings(BaseSettings):
     # AI report generation
     GEMINI_API_KEY: str = ""
     LLM_MODEL: str = "gemini-2.5-flash"
+
+    @property
+    def uploads_path(self):
+        """Resolve uploads directory — configurable for Docker, defaults to ./uploads."""
+        from pathlib import Path
+        if self.UPLOADS_DIR:
+            return Path(self.UPLOADS_DIR)
+        return Path(__file__).resolve().parent / "uploads"
 
     class Config:
         env_file = ("../.env", ".env")

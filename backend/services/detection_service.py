@@ -133,7 +133,7 @@ def run_detection_pipeline(session_id: str, db) -> dict:
     session.status = "detecting"
     db.commit()
 
-    uploads_dir = Path(__file__).resolve().parent.parent / "uploads"
+    uploads_dir = settings.uploads_path
     frames_dir = uploads_dir / session_id / "frames"
     detections_dir = uploads_dir / session_id / "detections"
     annotated_dir = uploads_dir / session_id / "annotated"

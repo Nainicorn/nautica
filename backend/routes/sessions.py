@@ -4,6 +4,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
+from config import settings
 from models.analysis_session import AnalysisSession
 from models.detection import Detection
 from schemas.analysis_session import SessionCreate, SessionResponse, SessionList
@@ -40,9 +41,6 @@ def create_session(data: SessionCreate, db: Session = Depends(get_db)):
     return SessionResponse.model_validate(session)
 
 
-UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
-
-
 @router.post("/sessions/{session_id}/process", response_model=SessionResponse)
 def process_session(session_id: str, db: Session = Depends(get_db)):
     session = db.query(AnalysisSession).filter(AnalysisSession.id == session_id).first()
@@ -59,8 +57,8 @@ def process_session(session_id: str, db: Session = Depends(get_db)):
     db.commit()
 
     try:
-        source_path = UPLOADS_DIR.parent / session.file_path
-        frames_dir = UPLOADS_DIR / session_id / "frames"
+        source_path = settings.uploads_path.parent / session.file_path
+        frames_dir = settings.uploads_path / session_id / "frames"
 
         result = video_service.extract_frames(str(source_path), str(frames_dir))
 
@@ -88,7 +86,7 @@ def delete_session(session_id: str, db: Session = Depends(get_db)):
     db.delete(session)
     db.commit()
 
-    session_dir = UPLOADS_DIR / session_id
+    session_dir = settings.uploads_path / session_id
     if session_dir.exists():
         shutil.rmtree(session_dir)
 

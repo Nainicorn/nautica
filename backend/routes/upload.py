@@ -2,6 +2,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from database import get_db
+from config import settings
 from models.analysis_session import AnalysisSession
 from schemas.upload import UploadResponse
 
@@ -9,7 +10,6 @@ router = APIRouter()
 
 ALLOWED_EXTENSIONS = {".mp4", ".mov", ".avi", ".jpg", ".jpeg", ".png"}
 MAX_FILE_SIZE = 200 * 1024 * 1024  # 200MB
-UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
 
 
 @router.post("/upload", response_model=UploadResponse)
@@ -41,7 +41,7 @@ async def upload_file(
         raise HTTPException(status_code=413, detail="File exceeds 200MB limit")
 
     # Save file
-    dest_dir = UPLOADS_DIR / session_id / "source"
+    dest_dir = settings.uploads_path / session_id / "source"
     dest_dir.mkdir(parents=True, exist_ok=True)
     dest_path = dest_dir / file.filename
 
@@ -53,7 +53,7 @@ async def upload_file(
 
     # Update session
     session.status = "uploaded"
-    session.file_path = str(dest_path.relative_to(UPLOADS_DIR.parent))
+    session.file_path = str(dest_path.relative_to(settings.uploads_path.parent))
     session.source_filename = file.filename
     session.file_type = file_type
     db.commit()

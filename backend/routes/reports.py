@@ -54,7 +54,7 @@ def get_report(session_id: str, db: Session = Depends(get_db)):
 
 @router.get("/sessions/{session_id}/report/stream")
 def stream_report(session_id: str):
-    """SSE endpoint that streams the AI report word-by-word from Gemini."""
+    """SSE endpoint that streams the AI report."""
     db = SessionLocal()
 
     try:
@@ -63,12 +63,8 @@ def stream_report(session_id: str):
             db.close()
             raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
 
-        if not settings.GEMINI_API_KEY:
-            db.close()
-            raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not configured")
-
         # Load tracking artifact
-        uploads_dir = Path(__file__).resolve().parent.parent / "uploads"
+        uploads_dir = settings.uploads_path
         tracks_path = uploads_dir / session_id / "tracking" / "tracks.json"
         tracks_data = None
         if tracks_path.exists():
@@ -100,11 +96,24 @@ def stream_report(session_id: str):
             session.status = "generating_report"
             db.commit()
 
-            for chunk in report_service.generate_stream(
-                session_id, detections, anomalies, tracks_data
-            ):
-                full_text += chunk
-                yield f"data: {json.dumps({'text': chunk})}\n\n"
+            if not settings.GEMINI_API_KEY:
+                # Demo mode fallback
+                det_count = len(detections)
+                anom_count = len(anomalies)
+                track_ids = set(d.track_id for d in detections if d.track_id)
+                full_text = (
+                    f"[DEMO MODE] AI report generation requires a GEMINI_API_KEY. "
+                    f"Configure it in your .env file to enable live intelligence reports. "
+                    f"Session {session_id} processed {det_count} detections across "
+                    f"{len(track_ids)} tracked vessels with {anom_count} anomalies flagged."
+                )
+                yield f"data: {json.dumps({'text': full_text})}\n\n"
+            else:
+                for chunk in report_service.generate_stream(
+                    session_id, detections, anomalies, tracks_data
+                ):
+                    full_text += chunk
+                    yield f"data: {json.dumps({'text': chunk})}\n\n"
 
             # Save report to DB
             db.query(Report).filter(Report.session_id == session_id).delete()
@@ -128,7 +137,7 @@ def stream_report(session_id: str):
             artifact = {
                 "session_id": session_id,
                 "generated_at": generated_at.isoformat(),
-                "model": settings.LLM_MODEL,
+                "model": settings.LLM_MODEL if settings.GEMINI_API_KEY else "demo",
                 "summary": full_text.strip(),
             }
             with open(reports_dir / "report.json", "w") as f:
@@ -139,7 +148,7 @@ def stream_report(session_id: str):
 
             yield f"data: {json.dumps({'done': True})}\n\n"
 
-            logger.info(f"Session {session_id}: streamed report complete")
+            logger.info(f"Session {session_id}: report complete")
 
         except Exception as e:
             session.status = "failed"

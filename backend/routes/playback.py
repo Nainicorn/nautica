@@ -13,7 +13,6 @@ from schemas.playback import BBox, FrameDetection, FrameOverlay, OverlayResponse
 
 router = APIRouter()
 
-UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
 
 
 @router.get("/sessions/{session_id}/overlay", response_model=OverlayResponse)
@@ -22,7 +21,7 @@ def get_overlay(session_id: str, db: Session = Depends(get_db)):
     if not session:
         raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
 
-    frames_dir = UPLOADS_DIR / session_id / "frames"
+    frames_dir = settings.uploads_path / session_id / "frames"
     frame_numbers = _list_frame_numbers(frames_dir)
     frame_count = len(frame_numbers)
 

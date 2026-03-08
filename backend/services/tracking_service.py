@@ -244,7 +244,7 @@ def run_tracking_pipeline(session_id: str, db) -> dict:
         db.commit()
 
         # Save tracking artifact
-        uploads_dir = Path(__file__).resolve().parent.parent / "uploads"
+        uploads_dir = settings.uploads_path
         tracking_dir = uploads_dir / session_id / "tracking"
         tracking_dir.mkdir(parents=True, exist_ok=True)
 

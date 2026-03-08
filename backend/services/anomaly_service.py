@@ -239,7 +239,7 @@ def run_anomaly_pipeline(session_id, db):
     session.status = "anomaly_detection"
     db.commit()
 
-    uploads_dir = Path(__file__).resolve().parent.parent / "uploads"
+    uploads_dir = settings.uploads_path
     tracks_path = uploads_dir / session_id / "tracking" / "tracks.json"
 
     if not tracks_path.exists():

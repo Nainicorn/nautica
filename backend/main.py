@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from database import engine, Base, SessionLocal
-from utils.mock_loader import load_mock
+from database import engine, Base
+from config import settings
 
 
 import models.analysis_session  # noqa: F401
@@ -17,7 +17,6 @@ import models.report  # noqa: F401
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     _migrate_columns()
-    _seed_sessions()
     _ensure_uploads_dir()
     yield
 
@@ -42,31 +41,8 @@ def _migrate_columns():
 
 
 def _ensure_uploads_dir():
-    from pathlib import Path
-    uploads = Path(__file__).resolve().parent / "uploads"
-    uploads.mkdir(exist_ok=True)
+    settings.uploads_path.mkdir(parents=True, exist_ok=True)
 
-
-def _seed_sessions():
-    from models.analysis_session import AnalysisSession
-    db = SessionLocal()
-    try:
-        count = db.query(AnalysisSession).count()
-        if count == 0:
-            sessions_data = load_mock("sessions.json")
-            for s in sessions_data:
-                session = AnalysisSession(
-                    id=s["id"],
-                    name=s["name"],
-                    status=s["status"],
-                    file_path=s.get("file_path"),
-                    file_type=s.get("file_type"),
-                    source_filename=s.get("source_filename"),
-                )
-                db.add(session)
-            db.commit()
-    finally:
-        db.close()
 
 
 app = FastAPI(
@@ -78,11 +54,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5001",
-        "http://127.0.0.1:5001",
-        "http://localhost:5173",
-    ],
+    allow_origins=[o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -106,6 +78,6 @@ app.include_router(playback_router, prefix="/api", tags=["playback"])
 
 app.mount(
     "/api/uploads",
-    StaticFiles(directory=Path(__file__).resolve().parent / "uploads"),
+    StaticFiles(directory=settings.uploads_path),
     name="uploads",
 )

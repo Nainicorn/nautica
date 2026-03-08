@@ -205,17 +205,12 @@ def run_report_pipeline(session_id, db):
     if not session:
         raise ValueError(f"Session not found: {session_id}")
 
-    if not settings.GEMINI_API_KEY:
-        session.status = "failed"
-        db.commit()
-        raise ValueError("GEMINI_API_KEY is not configured")
-
     session.status = "generating_report"
     db.commit()
 
     try:
         # Load tracking artifact
-        uploads_dir = Path(__file__).resolve().parent.parent / "uploads"
+        uploads_dir = settings.uploads_path
         tracks_path = uploads_dir / session_id / "tracking" / "tracks.json"
         tracks_data = None
         if tracks_path.exists():
@@ -235,8 +230,29 @@ def run_report_pipeline(session_id, db):
             .all()
         )
 
-        # Generate report
-        result = report_service.generate(session_id, detections, anomalies, tracks_data)
+        # Demo mode: no API key configured
+        if not settings.GEMINI_API_KEY:
+            det_count = len(detections)
+            anom_count = len(anomalies)
+            track_ids = set(d.track_id for d in detections if d.track_id)
+            result = {
+                "summary": (
+                    f"[DEMO MODE] AI report generation requires a GEMINI_API_KEY. "
+                    f"Configure it in your .env file to enable live intelligence reports. "
+                    f"Session {session_id} processed {det_count} detections across "
+                    f"{len(track_ids)} tracked vessels with {anom_count} anomalies flagged."
+                ),
+                "anomalies_text": None,
+                "recommendation": None,
+                "stats": {
+                    "detections": det_count,
+                    "tracks": len(track_ids),
+                    "anomalies": anom_count,
+                },
+            }
+        else:
+            # Generate report via LLM
+            result = report_service.generate(session_id, detections, anomalies, tracks_data)
 
         # Clear existing report for this session (re-runnable)
         db.query(Report).filter(Report.session_id == session_id).delete()

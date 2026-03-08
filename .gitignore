@@ -11,6 +11,8 @@ __pycache__/
 *.pyc
 *.pt
 backend/uploads/
+uploads/
+data/
 sample-data/demo-clips/*.mp4
 sample-data/demo-clips/*.avi
 sample-data/demo-clips/*.mov

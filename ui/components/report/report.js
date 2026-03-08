@@ -42,8 +42,10 @@ const report = {
             const data = await getReport(sessionId);
             const hasContent = data.summary || data.anomalies_text || data.recommendation;
 
+            const isDemo = data.summary && data.summary.startsWith('[DEMO MODE]');
             this._render({
                 ...data,
+                demoMode: isDemo,
                 empty: !hasContent,
                 timestamp: formatTimestamp(data.generated_at),
             });
