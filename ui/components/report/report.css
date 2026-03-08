@@ -67,6 +67,7 @@
     font-size: 12px;
     line-height: 1.7;
     color: var(--text-muted);
+    white-space: pre-wrap;
 }
 
 .__report-state {
@@ -78,4 +79,19 @@
 
 .__report-state--error {
     color: var(--alert);
+}
+
+.__report-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: var(--accent);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: __report-blink 0.8s step-end infinite;
+}
+
+@keyframes __report-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
 }

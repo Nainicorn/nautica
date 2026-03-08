@@ -25,14 +25,17 @@ function badgeForStatus(status) {
     if (status === 'uploaded') {
         return { badgeClass: 'pending', badgeLabel: 'UPLOADED' };
     }
-    if (status === 'processing' || status === 'detecting' || status === 'tracking' || status === 'anomaly_detection') {
-        return { badgeClass: 'active', badgeLabel: status === 'anomaly_detection' ? 'ANALYZING' : 'PROCESSING' };
+    if (status === 'processing' || status === 'detecting' || status === 'tracking' || status === 'anomaly_detection' || status === 'generating_report') {
+        return { badgeClass: 'active', badgeLabel: status === 'anomaly_detection' ? 'ANALYZING' : status === 'generating_report' ? 'REPORTING' : 'PROCESSING' };
     }
     if (status === 'extracted') {
         return { badgeClass: 'pending', badgeLabel: 'READY' };
     }
     if (status === 'anomaly_complete') {
         return { badgeClass: 'complete', badgeLabel: 'ANALYZED' };
+    }
+    if (status === 'report_complete') {
+        return { badgeClass: 'complete', badgeLabel: 'COMPLETE' };
     }
     if (status === 'completed') {
         return { badgeClass: 'complete', badgeLabel: 'DONE' };

@@ -2,7 +2,6 @@ import template from './viewer.hbs';
 import './viewer.css';
 import events from '../../services/events.js';
 import { getOverlayData, getFrameUrl } from '../../services/playback.js';
-import { getAnomalies } from '../../services/analysis.js';
 
 const PRELOAD_AHEAD = 12;
 const KEEP_BEHIND = 8;
@@ -11,6 +10,7 @@ const PLAYBACK_STATUSES = [
     'extracted', 'detecting', 'detection_complete',
     'tracking', 'tracking_complete',
     'anomaly_detection', 'anomaly_complete',
+    'generating_report', 'report_complete',
 ];
 
 const viewer = {
@@ -149,7 +149,6 @@ const viewer = {
         this.$playBtn.querySelector('.material-icon').textContent = 'play_arrow';
         this.$ctx.clearRect(0, 0, this.$canvas.width, this.$canvas.height);
         this.$frame.src = '';
-        this.$progress.querySelectorAll('.__viewer-anomaly-marker').forEach(m => m.remove());
     },
 
     async _loadSession(session) {
@@ -176,58 +175,9 @@ const viewer = {
             this._displayFrame(0);
             if (!isSingle) this._play();
 
-            // Load anomaly markers (non-blocking)
-            this._loadAnomalyMarkers(session.id);
         } catch (err) {
             console.error('Failed to load overlay data:', err);
             this.$loading.classList.add('__viewer-loading--hidden');
-        }
-    },
-
-    async _loadAnomalyMarkers(sessionId) {
-        try {
-            const data = await getAnomalies(sessionId);
-            if (this.sessionId !== sessionId) return; // session changed
-            this._renderAnomalyMarkers(data.anomalies || []);
-        } catch {
-            // Anomaly markers are optional — fail silently
-        }
-    },
-
-    _renderAnomalyMarkers(anomalies) {
-        // Remove existing markers
-        this.$progress.querySelectorAll('.__viewer-anomaly-marker').forEach(m => m.remove());
-
-        if (!this.overlayData || !this.overlayData.frames.length || !anomalies.length) return;
-
-        const frameNumbers = this.overlayData.frames.map(f => f.frame_number);
-        const maxFrame = frameNumbers[frameNumbers.length - 1];
-        const minFrame = frameNumbers[0];
-        const range = maxFrame - minFrame || 1;
-
-        const severityColors = {
-            info: 'var(--accent)',
-            warning: 'var(--warning)',
-            critical: 'var(--alert)',
-        };
-
-        for (const anom of anomalies) {
-            if (anom.frame_number == null) continue;
-
-            const pct = Math.max(0, Math.min(100, ((anom.frame_number - minFrame) / range) * 100));
-            const marker = document.createElement('div');
-            marker.className = '__viewer-anomaly-marker';
-            marker.style.left = `${pct}%`;
-            marker.style.background = severityColors[anom.severity] || severityColors.info;
-            marker.title = anom.description || anom.anomaly_type;
-            marker.dataset.frameNumber = anom.frame_number;
-
-            marker.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this._seekToFrame(parseInt(marker.dataset.frameNumber, 10));
-            });
-
-            this.$progress.appendChild(marker);
         }
     },
 

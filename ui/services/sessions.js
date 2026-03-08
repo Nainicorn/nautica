@@ -28,6 +28,10 @@ export function analyzeSession(sessionId) {
     return post(`/sessions/${sessionId}/analyze`);
 }
 
+export function generateReport(sessionId) {
+    return post(`/sessions/${sessionId}/report`);
+}
+
 export function deleteSession(sessionId) {
     return del(`/sessions/${sessionId}`);
 }

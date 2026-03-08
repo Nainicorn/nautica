@@ -185,3 +185,29 @@ def analyze_session(session_id: str, db: Session = Depends(get_db)):
         **response.model_dump(),
         "anomaly_count": result["anomaly_count"],
     }
+
+
+@router.post("/sessions/{session_id}/report", response_model=SessionResponse)
+def generate_report(session_id: str, db: Session = Depends(get_db)):
+    session = db.query(AnalysisSession).filter(AnalysisSession.id == session_id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+
+    if session.status != "anomaly_complete":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Session status is '{session.status}', expected 'anomaly_complete'",
+        )
+
+    try:
+        from services.report_service import run_report_pipeline
+
+        result = run_report_pipeline(session_id, db)
+        db.refresh(session)
+
+    except Exception as e:
+        session.status = "failed"
+        db.commit()
+        raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
+
+    return SessionResponse.model_validate(session)

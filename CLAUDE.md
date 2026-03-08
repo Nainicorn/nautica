@@ -192,7 +192,6 @@ backend/
 10. Anomaly detection on tracked behavior (loitering, restricted zone, convergence, abrupt motion rules)
 
 ### Current Phase
-**Phase 10 — AI report generation**
 
 ---
 
@@ -200,9 +199,8 @@ backend/
 
 | Phase | Focus |
 |-------|-------|
-| **10** | AI report generation (current) |
 | **11** | Cloud deployment (AWS) |
-| **12** | file cleanup, laymans term explanation full project, create readme, make sure everything is prepped to post on linkedin |
+| **12** | file cleanup, laymans term explanation full project, create readme, make sure everything is prepped to post on linkedin, remove anythin unecessary in claude.md, if/how someone else can demo it themselves |
 
 ---
 

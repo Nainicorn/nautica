@@ -1,6 +1,6 @@
 import template from './upload.hbs';
 import './upload.css';
-import { createSession, processSession, detectSession, trackSession } from '../../services/sessions.js';
+import { createSession, processSession, detectSession, trackSession, analyzeSession } from '../../services/sessions.js';
 import { uploadFile } from '../../services/api.js';
 import events from '../../services/events.js';
 
@@ -137,28 +137,21 @@ const upload = {
                 progressText.textContent = pct + '%';
             });
 
-            // 3. Upload complete — run full pipeline
+            // 3. Upload complete — keep showing upload UI while pipeline runs silently
             progressFill.style.width = '100%';
             progressText.textContent = '100%';
-            submitBtn.textContent = 'Extracting frames...';
-            events.emit('sessions:updated');
+            submitBtn.textContent = 'Processing...';
 
             await processSession(session.id);
-            events.emit('sessions:updated');
+            await detectSession(session.id);
+            await trackSession(session.id);
+            const analyzed = await analyzeSession(session.id);
 
-            // 4. Run YOLO detection
-            submitBtn.textContent = 'Running detection...';
-            const detected = await detectSession(session.id);
+            // Close modal and show session — report streams live in the panel
             events.emit('sessions:updated');
-            events.emit('session:selected', detected);
-
-            // 5. Run object tracking
-            submitBtn.textContent = 'Tracking objects...';
-            const tracked = await trackSession(session.id);
-            events.emit('sessions:updated');
-            events.emit('session:selected', tracked);
-
-            setTimeout(() => this.hide(), 300);
+            events.emit('session:selected', { ...analyzed, _live: true });
+            events.emit('report:stream', analyzed.id);
+            this.hide();
         } catch (err) {
             this._showError('Upload failed: ' + err.message);
             submitBtn.textContent = 'Start Analysis';

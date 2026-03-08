@@ -16,28 +16,31 @@ function statusClass(status) {
     return 'tracking';
 }
 
+
 const detections = {
     element: null,
     allItems: [],
     visibleCount: 0,
     currentFrame: 0,
     seenTracks: new Set(),
+    liveMode: false,
     $tbody: null,
     $badge: null,
 
     init() {
         this.element = document.querySelector('.__detections');
         this._render({ idle: true, badge: '—' });
-        events.on('session:selected', (session) => this._load(session.id));
+        events.on('session:selected', (session) => this._load(session.id, session._live));
         events.on('viewer:frame-changed', (frameNum) => this._onFrameChanged(frameNum));
     },
 
-    async _load(sessionId) {
+    async _load(sessionId, live) {
         this._render({ loading: true, badge: '...' });
         this.allItems = [];
         this.visibleCount = 0;
         this.currentFrame = 0;
         this.seenTracks = new Set();
+        this.liveMode = !!live;
 
         try {
             const data = await getDetections(sessionId);
@@ -49,7 +52,31 @@ const detections = {
                 statusLabel: (d.status || 'unknown').toUpperCase(),
             }));
 
-            // Render table shell with no rows yet
+            if (!this.liveMode) {
+                // Static mode — show all unique tracks immediately
+                const seen = new Set();
+                const uniqueItems = [];
+                for (const item of this.allItems) {
+                    const key = item.track_id || item.id;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        uniqueItems.push(item);
+                    }
+                }
+                this._render({
+                    streaming: uniqueItems.length > 0,
+                    empty: uniqueItems.length === 0,
+                    badge: `${uniqueItems.length} vessels`,
+                });
+                this.$tbody = this.element.querySelector('.__detections-tbody');
+                if (this.$tbody) {
+                    this.$tbody.innerHTML = uniqueItems.map(i => this._buildRow(i)).join('');
+                }
+                this._bindRowClick();
+                return;
+            }
+
+            // Live mode — render empty shell, rows appear as video plays
             this._render({
                 detections: [],
                 empty: this.allItems.length === 0,
@@ -59,22 +86,26 @@ const detections = {
 
             this.$tbody = this.element.querySelector('.__detections-tbody');
             this.$badge = this.element.querySelector('.__detections-badge');
-
-            this.$tbody.addEventListener('click', (e) => {
-                const row = e.target.closest('tr[data-frame]');
-                if (!row) return;
-                const frameNum = parseInt(row.dataset.frame, 10);
-                if (!isNaN(frameNum)) {
-                    events.emit('detection:seek', frameNum);
-                }
-            });
+            this._bindRowClick();
         } catch (err) {
-            this._render({ error: true, badge: '—' });
+            this._render({ empty: true, badge: '0' });
         }
     },
 
+    _bindRowClick() {
+        if (!this.$tbody) return;
+        this.$tbody.addEventListener('click', (e) => {
+            const row = e.target.closest('tr[data-frame]');
+            if (!row) return;
+            const frameNum = parseInt(row.dataset.frame, 10);
+            if (!isNaN(frameNum)) {
+                events.emit('detection:seek', frameNum);
+            }
+        });
+    },
+
     _onFrameChanged(frameNum) {
-        if (!this.allItems.length || !this.$tbody) return;
+        if (!this.liveMode || !this.allItems.length || !this.$tbody) return;
         if (frameNum < this.currentFrame) {
             this.$tbody.innerHTML = '';
             this.visibleCount = 0;

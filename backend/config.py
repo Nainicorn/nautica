@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     IOU_THRESHOLD: float = 0.2
     MAX_FRAMES_LOST: int = 5
     TRACKING_MIN_CONFIDENCE: float = 0.3
-    PLAYBACK_TARGET_FPS: int = 10
+    PLAYBACK_TARGET_FPS: int = 8
 
     # Anomaly detection
     LOITERING_MIN_FRAMES: int = 15
@@ -28,8 +28,12 @@ class Settings(BaseSettings):
     ]
     ABRUPT_MOTION_PX_PER_FRAME: float = 200.0
 
+    # AI report generation
+    GEMINI_API_KEY: str = ""
+    LLM_MODEL: str = "gemini-2.5-flash"
+
     class Config:
-        env_file = ".env"
+        env_file = ("../.env", ".env")
 
 
 settings = Settings()
